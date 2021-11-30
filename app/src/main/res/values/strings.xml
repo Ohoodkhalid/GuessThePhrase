@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Guess The phrase</string>
+    <string name = "Score">The score is </string>
+    <string name="ScoreSP">Score of game </string>
+
+
 </resources>

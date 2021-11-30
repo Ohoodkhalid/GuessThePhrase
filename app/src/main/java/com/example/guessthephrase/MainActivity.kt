@@ -1,9 +1,11 @@
 package com.example.guessthephrase
 
+import android.content.Context
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.content.DialogInterface
+import android.content.SharedPreferences
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.text.InputFilter
@@ -18,9 +20,11 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import com.google.android.material.snackbar.Snackbar
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var sharedPreferences: SharedPreferences
     lateinit var recView: RecyclerView
     lateinit var phraseTextView: TextView
     lateinit var letterTextView: TextView
+    private lateinit var myHighScore: TextView
     lateinit var guessedET: EditText
     var guessList = arrayListOf<String>()
     var guessLetters = arrayListOf<String>()
@@ -29,14 +33,26 @@ class MainActivity : AppCompatActivity() {
     var counter = 10
     var isPhrase = true
     var guessCorrectLetter = ""
+    private var score = 0
+    ///private var highScore = 0
 
     fun EditText.setMaxLength(maxLength: Int) {
         filters = arrayOf<InputFilter>(InputFilter.LengthFilter(maxLength))
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+
+        sharedPreferences = this.getSharedPreferences(
+            getString(R.string.ScoreSP), Context.MODE_PRIVATE)
+        score = sharedPreferences.getInt(getString(R.string.Score),0)
+
+        myHighScore = findViewById(R.id.tvScore)
+        myHighScore.text = "High Score: $score "
+
         recView = findViewById(R.id.recyclerview)
         recView.adapter = RecyclerViewAdapter(guessList)
         recView.layoutManager = LinearLayoutManager(this)
@@ -65,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                         checkLetter(guessText[0])
                     }
                 } else {
-                    showAlertDialog("Oops!,The phrase was $answer")
+                    showAlertDialog("Oops!,The phrase was $phrase")
                     // replayGame()
                 }
             }
@@ -103,6 +119,8 @@ class MainActivity : AppCompatActivity() {
     fun checkPhrase(guessText: String) {
         if (phrase == guessText) {
             showAlertDialog("Congratulations,You guessed it correctly!")
+            score++
+            updateScore(score)
             //replayGame()
 
             } else {
@@ -160,7 +178,8 @@ fun checkLetter(guessLetter: Char) {
         recView.adapter!!.notifyDataSetChanged()
     }
     if (phrase == guessCorrectLetter) {
-
+        score++
+        updateScore(score)
         showAlertDialog("Congratulations,You guessed it correctly!")
 
         recView.adapter!!.notifyDataSetChanged()
@@ -194,4 +213,18 @@ fun checkLetter(guessLetter: Char) {
 
     }
 
-}
+    private fun updateScore(score:Int){
+        with(sharedPreferences.edit()) {
+            putInt(getString(R.string.Score), score)
+            apply()
+        }
+        Snackbar.make(consLayOut, "NEW HIGH SCORE!", Snackbar.LENGTH_LONG).show()
+
+
+    }
+
+
+
+    }
+
+
